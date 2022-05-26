@@ -1,0 +1,35 @@
+---
+- hosts: OBBservers
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  tasks:
+  - name: Create a login user
+    user:
+      name: "{{ item.user }}"
+      password: "{{ item.password | password_hash('sha512') }}"
+      groups:
+      - root
+      state: present
+    with_items:
+         - { user: 'T1-anuraj', password: 'Anuraj@1234' }
+         - { user: 'T1-joel', password: 'Joel@1234' }
+  - name: "Add user user1 to sudo"
+    lineinfile:
+      path: /etc/sudoers
+      regexp: '^T1-anuraj'
+      line: "T1-anuraj    ALL=(ALL)       NOPASSWD: ALL"
+      state: present
+      mode: 0440
+      create: yes
+      validate: 'visudo -cf %s'
+  - name: "Add user user2 to sudo"
+    lineinfile:
+      path: /etc/sudoers
+      regexp: '^T1-joel'
+      line: "T1-joel    ALL=(ALL)       NOPASSWD: ALL"
+      state: present
+      mode: 0440
+      create: yes
+      validate: 'visudo -cf %s'
